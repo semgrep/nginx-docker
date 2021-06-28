@@ -24,7 +24,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v3.3.0
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/returntocorp/nginx
           flavor: |
             latest=false
           tags: |
