@@ -1,11 +1,11 @@
 # this stage is copied from https://github.com/Korijn/docker-nginx-brotli/blob/master/Dockerfile
 # why? tl;dr: brotli reduces transfer sizes by 15%
-FROM nginx:1.20-alpine
+FROM nginx:1.20-alpine AS ngx_brotli_build
 
 ENV NGX_MODULE_COMMIT 9aec15e2aa6feea2113119ba06460af70ab3ea62
 ENV NGX_MODULE_PATH ngx_brotli
 
-RUN wget "https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" -O nginx.tar.gz && \
+RUN wget "http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" -O nginx.tar.gz && \
     wget "https://github.com/google/ngx_brotli/archive/${NGX_MODULE_COMMIT}.tar.gz" -O ${NGX_MODULE_PATH}.tar.gz
 
 # For latest build deps, see https://github.com/nginxinc/docker-nginx/blob/master/mainline/alpine/Dockerfile
@@ -39,6 +39,8 @@ RUN CONFARGS=$(nginx -V 2>&1 | sed -n -e 's/^.*arguments: //p') \
     mkdir /so-deps && \
     cp -L $(ldd /usr/local/nginx/modules/ngx_http_brotli_filter_module.so 2>/dev/null | grep '/usr/lib/' | awk '{ print $3 }' | tr '\n' ' ') /so-deps
 
-COPY /so-deps /usr/lib
-COPY /usr/local/nginx/modules/ngx_http_brotli_filter_module.so /usr/local/nginx/modules/ngx_http_brotli_filter_module.so
-COPY /usr/local/nginx/modules/ngx_http_brotli_static_module.so /usr/local/nginx/modules/ngx_http_brotli_static_module.so
+FROM nginx:1.20-alpine
+
+COPY --from=ngx_brotli_build /so-deps /usr/lib
+COPY --from=ngx_brotli_build /usr/local/nginx/modules/ngx_http_brotli_filter_module.so /usr/local/nginx/modules/ngx_http_brotli_filter_module.so
+COPY --from=ngx_brotli_build /usr/local/nginx/modules/ngx_http_brotli_static_module.so /usr/local/nginx/modules/ngx_http_brotli_static_module.so
