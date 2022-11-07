@@ -1,6 +1,13 @@
 name: Build & push Docker image
 
 on:
+  workflow_dispatch:
+    inputs:
+      docker_cache_enabled:
+        description: "Whether or not to use the cache for docker build. Disable to force updates of OS packages, for example."
+        required: false
+        type: boolean
+        default: true
   push:
     branches:
       - "**"
@@ -39,6 +46,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Cache Docker layers
         uses: actions/cache@v2.1.6
+        if: inputs.docker_cache_enabled
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
