@@ -1,6 +1,6 @@
 # this stage is copied from https://github.com/Korijn/docker-nginx-brotli/blob/master/Dockerfile
 # why? tl;dr: brotli reduces transfer sizes by 15%
-FROM nginx:1.20-alpine AS ngx_brotli_build
+FROM nginx:alpine AS ngx_brotli_build
 
 ENV NGX_MODULE_COMMIT 9aec15e2aa6feea2113119ba06460af70ab3ea62
 ENV NGX_MODULE_PATH ngx_brotli
@@ -39,7 +39,7 @@ RUN CONFARGS=$(nginx -V 2>&1 | sed -n -e 's/^.*arguments: //p') \
     mkdir /so-deps && \
     cp -L $(ldd /usr/local/nginx/modules/ngx_http_brotli_filter_module.so 2>/dev/null | grep '/usr/lib/' | awk '{ print $3 }' | tr '\n' ' ') /so-deps
 
-FROM nginx:1.20-alpine
+FROM nginx:alpine
 RUN apk upgrade --no-cache
 
 COPY --from=ngx_brotli_build /so-deps /usr/lib
